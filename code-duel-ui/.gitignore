@@ -1,0 +1,22 @@
+# Node / Frontend Dependencies (Matches ANY folder name)
+**/node_modules/
+**/dist/
+**/build/
+**/.next/
+**/.out/
+
+# Java / Backend Build Output
+**/target/
+**/*.jar
+**/.mvn/
+
+# Secrets & Keys
+*.pem
+*.key
+.env
+*.env
+
+# IDE Files
+.idea/
+.vscode/
+*.iml

@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+/* Global Body styling to match the dark theme */
+body {
+  background-color: #12141d;
+  color: #ffffff;
+  margin: 0;
+  padding: 0;
+}
+
+/* Force root to take full height, but REMOVE text-align: left so the homepage can center! */
+#root {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* LEETCODE PROBLEM DESCRIPTION STYLING */
+.leetcode-problem-text {
+  text-align: left !important;
+}
+
+.leetcode-problem-text pre {
+  background-color: #1e2029 !important; /* Slightly darkened to match the new theme */
+  padding: 1rem !important;
+  border-radius: 0.5rem !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  color: #d4d4d4 !important;
+  margin-top: 0.5rem !important;
+  margin-bottom: 1.5rem !important;
+  white-space: pre-wrap !important;
+  text-align: left !important;
+  border: 1px solid #374151 !important;
+}
+
+.leetcode-problem-text code {
+  background-color: #1e2029;
+  padding: 0.1rem 0.3rem;
+  border-radius: 0.25rem;
+  font-family: monospace;
+  color: #c4b5fd; /* Soft purple to match the arena theme instead of orange */
+}
+
+.leetcode-problem-text h1 {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: #ffffff;
+  text-align: left !important;
+}
+
+.leetcode-problem-text p {
+  margin-bottom: 1rem;
+  text-align: left !important;
+}
