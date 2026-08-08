@@ -18,7 +18,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/execute")
-@CrossOrigin(origins = "*")
+
 public class RunController {
 
     @Autowired

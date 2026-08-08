@@ -17,7 +17,7 @@ import com.aswin._v1.entity.User;
 import java.util.*;
 @RestController
 @RequestMapping("/api/submissions")
-@CrossOrigin(origins = "*")
+
 public class SubmController{
     @Autowired
     private UserRepo ur;

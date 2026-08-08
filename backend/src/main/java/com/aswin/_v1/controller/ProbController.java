@@ -14,7 +14,7 @@ import com.aswin._v1.entity.Problem;
 import com.aswin._v1.repository.ProbRepo;
 @RestController
 @RequestMapping("/api/problems")
-@CrossOrigin(origins = "*")
+
 public class ProbController {
     @Autowired
     private ProbRepo pr;

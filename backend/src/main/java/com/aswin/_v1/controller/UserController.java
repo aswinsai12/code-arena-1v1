@@ -9,7 +9,7 @@ import com.aswin._v1.dto.GoogleAuthRequest;
 import java.util.*;
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "*")
+
 public class UserController {
 
     @Autowired
