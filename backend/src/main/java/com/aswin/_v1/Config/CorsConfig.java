@@ -14,9 +14,9 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins(
+                        .allowedOriginPatterns(
                             "http://localhost:5173", 
-                            "https://code-arena-1v1-ten.vercel.app", 
+                            "https://*.vercel.app", 
                             "https://code-1v1-duel.me",
                             "https://live.code-1v1-duel.me"
                         )
