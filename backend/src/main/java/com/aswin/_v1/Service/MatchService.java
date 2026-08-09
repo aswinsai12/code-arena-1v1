@@ -19,17 +19,24 @@ public class MatchService {
     @Autowired
     private SimpMessageSendingOperations messagingTemplate;
     
-    private final Map<String, Boolean> resolvedRooms = new ConcurrentHashMap<>();
+    // Changed back to Long so we can track the exact time a match finishes
+    private final Map<String, Long> resolvedRooms = new ConcurrentHashMap<>();
     
     private final Object matchLock = new Object();
 
     public void resolveMatch(Long winnerId, Long loserId, String roomId, String reason) {
+        long currentTime = System.currentTimeMillis();
         
         if (roomId != null) {
             if (resolvedRooms.containsKey(roomId)) {
-                return; 
+                long lastScoredTime = resolvedRooms.get(roomId);
+                // Lock the room for 5 seconds to stop the double-score bug,
+                // but unlock it after 5 seconds so you can test again!
+                if (currentTime - lastScoredTime < 5000) { 
+                    return; 
+                }
             }
-            resolvedRooms.put(roomId, true);
+            resolvedRooms.put(roomId, currentTime);
             
             if (resolvedRooms.size() > 500) {
                 resolvedRooms.clear();

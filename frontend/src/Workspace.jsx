@@ -66,9 +66,9 @@ export default function Workspace({ problemId, roomId, opponentId, currentUser, 
     if (!currentUser) return;
     const activeRoom = roomId || "default-arena"; 
 
-    const socket = new SockJS(`${API_URL}/ws`);
     const client = new Client({
-      webSocketFactory: () => socket,
+      // FIX 1: Generate a fresh SockJS instance every time to prevent dead WebSocket connections
+      webSocketFactory: () => new SockJS(`${API_URL}/ws`),
       onConnect: () => {
         client.subscribe(`/topic/duel/${activeRoom}`, (message) => {
           const data = JSON.parse(message.body);
@@ -113,7 +113,8 @@ export default function Workspace({ problemId, roomId, opponentId, currentUser, 
         body: JSON.stringify({
           roomId: roomId || "default-arena",
           userId: currentUser?.id,
-          opponentId: opponentId 
+          // FIX 2: Force explicit null so JSON.stringify doesn't silently delete the key
+          opponentId: opponentId || null 
         })
       });
     } catch (err) {
@@ -164,7 +165,8 @@ export default function Workspace({ problemId, roomId, opponentId, currentUser, 
           userId: currentUser.id, 
           code: code,
           roomId: roomId || "default-arena", 
-          opponentId: opponentId 
+          // FIX 3: Force explicit null here as well
+          opponentId: opponentId || null 
         }) 
       });
       const data = await response.json();
