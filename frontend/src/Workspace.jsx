@@ -19,7 +19,7 @@ export default function Workspace({ problemId, roomId, opponentId, currentUser, 
   const [leftWidth, setLeftWidth] = useState(50); 
   const [isDragging, setIsDragging] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false); 
-  const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
+  const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
   
   useEffect(() => {
     const handleBeforeUnload = (e) => {
@@ -60,14 +60,13 @@ export default function Workspace({ problemId, roomId, opponentId, currentUser, 
         .then(data => setProblem(data))
         .catch(err => console.error("Error fetching problem:", err));
     }
-  }, [problemId]);
+  }, [problemId, API_URL]);
 
   useEffect(() => {
     if (!currentUser) return;
     const activeRoom = roomId || "default-arena"; 
 
     const client = new Client({
-      // FIX 1: Generate a fresh SockJS instance every time to prevent dead WebSocket connections
       webSocketFactory: () => new SockJS(`${API_URL}/ws`),
       onConnect: () => {
         client.subscribe(`/topic/duel/${activeRoom}`, (message) => {
@@ -97,7 +96,14 @@ export default function Workspace({ problemId, roomId, opponentId, currentUser, 
 
     client.activate();
     return () => client.deactivate();
-  }, [roomId, currentUser, setActivePage]);
+  }, [roomId, currentUser, setActivePage, API_URL]);
+
+  // Safely grab the opponent ID and convert it to a real Number
+  const getSafeOpponentId = () => {
+    let id = opponentId || localStorage.getItem("activeOpponentId");
+    if (id === "null" || id === "undefined" || !id) return null;
+    return Number(id);
+  };
 
   const handleForfeit = async () => {
     setShowExitModal(false);
@@ -106,6 +112,8 @@ export default function Workspace({ problemId, roomId, opponentId, currentUser, 
       if(setActivePage) setActivePage('home'); 
     }, 4000);
 
+    const safeOppId = getSafeOpponentId();
+
     try {
       await fetch(`${API_URL}/api/execute/forfeit`, {
         method: "POST",
@@ -113,8 +121,7 @@ export default function Workspace({ problemId, roomId, opponentId, currentUser, 
         body: JSON.stringify({
           roomId: roomId || "default-arena",
           userId: currentUser?.id,
-          // FIX 2: Force explicit null so JSON.stringify doesn't silently delete the key
-          opponentId: opponentId || null 
+          opponentId: safeOppId 
         })
       });
     } catch (err) {
@@ -156,6 +163,8 @@ export default function Workspace({ problemId, roomId, opponentId, currentUser, 
     setActiveConsoleTab('result');
     setSubmitResult({ verdict: "TESTING", message: "Evaluating against hidden test cases..." });
 
+    const safeOppId = getSafeOpponentId();
+
     try {
       const response = await fetch(`${API_URL}/api/execute/submit`, {
         method: "POST",
@@ -165,8 +174,7 @@ export default function Workspace({ problemId, roomId, opponentId, currentUser, 
           userId: currentUser.id, 
           code: code,
           roomId: roomId || "default-arena", 
-          // FIX 3: Force explicit null here as well
-          opponentId: opponentId || null 
+          opponentId: safeOppId 
         }) 
       });
       const data = await response.json();

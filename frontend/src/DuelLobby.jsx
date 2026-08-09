@@ -101,7 +101,12 @@ export default function DuelLobby({ currentUser, onMatchStart }) {
             <span className="text-red-400">{matchFound.opponent}</span>
           </div>
           <button 
-            onClick={() => onMatchStart(matchFound.problemId, matchFound.roomId, matchFound.opponentId)}
+            onClick={() => {
+              if (matchFound.opponentId) {
+                localStorage.setItem("activeOpponentId", String(matchFound.opponentId));
+              }
+              onMatchStart(matchFound.problemId, matchFound.roomId, matchFound.opponentId);
+            }}
             className="bg-purple-600 hover:bg-purple-500 text-white px-10 py-4 rounded-xl font-black text-xl uppercase tracking-widest transition-transform hover:scale-105 shadow-lg cursor-pointer"
           >
             Enter Arena (Task #{matchFound.problemId})
