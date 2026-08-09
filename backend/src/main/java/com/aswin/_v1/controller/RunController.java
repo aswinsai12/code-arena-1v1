@@ -65,6 +65,10 @@ public class RunController {
 
     @PostMapping("/submit")
     public ResponseEntity<SubmitResponse> submitCode(@RequestBody SubmitRequest request) {
+        System.out.println("📥 SUBMIT REQUEST: userId=" + request.getUserId() + 
+                           ", opponentId=" + request.getOpponentId() + 
+                           ", roomId=" + request.getRoomId());
+
         Submission submission = new Submission();
         submission.setSourceCode(request.getCode());
         submission.setVerdict("RUNNING");
@@ -83,9 +87,10 @@ public class RunController {
         submRepo.save(submission);
 
         if ("ACCEPTED".equals(result.getVerdict()) && request.getRoomId() != null) {
-            System.out.println("🔥 SUBMIT MATCH ACCEPTED! Winner: " + request.getUserId() + " | Loser/Opponent: " + request.getOpponentId() + " | Room: " + request.getRoomId());
+            System.out.println("🔥 SUBMIT MATCH ACCEPTED! Winner: " + request.getUserId() + 
+                               " | Loser/Opponent: " + request.getOpponentId() + 
+                               " | Room: " + request.getRoomId());
             
-            // Winner = request.getUserId(), Loser = request.getOpponentId()
             matchService.resolveMatch(request.getUserId(), request.getOpponentId(), request.getRoomId(), "NORMAL");
         }
 
@@ -95,17 +100,18 @@ public class RunController {
     @PostMapping("/forfeit")
     public ResponseEntity<String> forfeitMatch(@RequestBody Map<String, Object> payload) {
         try {
+            System.out.println("📥 RAW FORFEIT PAYLOAD: " + payload);
+
             String roomId = (String) payload.get("roomId");
             Object userIdObj = payload.get("userId");
             Object opponentIdObj = payload.get("opponentId");
 
-            Long loserId = (userIdObj != null && !"null".equals(userIdObj.toString())) ? Long.valueOf(userIdObj.toString()) : null;
-            Long winnerId = (opponentIdObj != null && !"null".equals(opponentIdObj.toString())) ? Long.valueOf(opponentIdObj.toString()) : null;
+            Long loserId = parseToLong(userIdObj);
+            Long winnerId = parseToLong(opponentIdObj);
 
             System.out.println("🔥 FORFEIT MATCH! Winner: " + winnerId + " | Loser: " + loserId + " | Room: " + roomId);
 
             if (roomId != null && loserId != null) {
-                // Winner = winnerId (opponent), Loser = loserId (user who clicked forfeit)
                 matchService.resolveMatch(winnerId, loserId, roomId, "FORFEIT");
             }
 
@@ -113,6 +119,19 @@ public class RunController {
         } catch (Exception e) {
             System.out.println("Error processing forfeit: " + e.getMessage());
             return ResponseEntity.status(500).body("Error processing forfeit");
+        }
+    }
+
+    private Long parseToLong(Object obj) {
+        if (obj == null) return null;
+        String str = obj.toString().trim();
+        if ("null".equalsIgnoreCase(str) || "undefined".equalsIgnoreCase(str) || str.isEmpty()) {
+            return null;
+        }
+        try {
+            return Long.valueOf(str);
+        } catch (NumberFormatException e) {
+            return null;
         }
     }
 

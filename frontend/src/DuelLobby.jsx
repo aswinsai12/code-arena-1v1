@@ -102,9 +102,18 @@ export default function DuelLobby({ currentUser, onMatchStart }) {
           </div>
           <button 
             onClick={() => {
-              if (matchFound.opponentId) {
+              // --- DIAGNOSTIC LOGS ---
+              console.log("🔥 CLICKED 'ENTER ARENA'!");
+              console.log("📦 RAW MATCH DATA FROM WEBSOCKET:", matchFound);
+              
+              if (matchFound && matchFound.opponentId) {
                 localStorage.setItem("activeOpponentId", String(matchFound.opponentId));
+                console.log("✅ SUCCESSFULLY SAVED TO LOCAL STORAGE:", matchFound.opponentId);
+              } else {
+                console.error("❌ ERROR: OPPONENT ID IS MISSING FROM MATCH DATA!");
               }
+              // -----------------------
+
               onMatchStart(matchFound.problemId, matchFound.roomId, matchFound.opponentId);
             }}
             className="bg-purple-600 hover:bg-purple-500 text-white px-10 py-4 rounded-xl font-black text-xl uppercase tracking-widest transition-transform hover:scale-105 shadow-lg cursor-pointer"
