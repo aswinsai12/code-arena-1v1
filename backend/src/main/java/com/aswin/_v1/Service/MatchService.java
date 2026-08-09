@@ -5,6 +5,7 @@ import com.aswin._v1.repository.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,45 +20,42 @@ public class MatchService {
     @Autowired
     private SimpMessageSendingOperations messagingTemplate;
     
-    // Changed back to Long so we can track the exact time a match finishes
     private final Map<String, Long> resolvedRooms = new ConcurrentHashMap<>();
-    
     private final Object matchLock = new Object();
 
+    @Transactional
     public void resolveMatch(Long winnerId, Long loserId, String roomId, String reason) {
         long currentTime = System.currentTimeMillis();
         
         if (roomId != null) {
             if (resolvedRooms.containsKey(roomId)) {
                 long lastScoredTime = resolvedRooms.get(roomId);
-                // Lock the room for 5 seconds to stop the double-score bug,
-                // but unlock it after 5 seconds so you can test again!
-                if (currentTime - lastScoredTime < 5000) { 
+                if (currentTime - lastScoredTime < 3000) { 
                     return; 
                 }
             }
             resolvedRooms.put(roomId, currentTime);
-            
             if (resolvedRooms.size() > 500) {
                 resolvedRooms.clear();
             }
         } 
         
         synchronized (matchLock) {
-            User winner = winnerId != null ? ur.findById(winnerId).orElse(null) : null;
-            User loser = loserId != null ? ur.findById(loserId).orElse(null) : null;
-            
-            if (winner != null) {
-                winner.setPoints(winner.getPoints() + 5);
-                winner.setDuelsPlayed(winner.getDuelsPlayed() + 1);
-                winner.setDuelsWon(winner.getDuelsWon() + 1);
-                ur.saveAndFlush(winner); 
+            if (winnerId != null) {
+                ur.findById(winnerId).ifPresent(winner -> {
+                    winner.setPoints(winner.getPoints() + 5);
+                    winner.setDuelsPlayed(winner.getDuelsPlayed() + 1);
+                    winner.setDuelsWon(winner.getDuelsWon() + 1);
+                    ur.saveAndFlush(winner);
+                });
             }
             
-            if (loser != null) {
-                loser.setPoints(Math.max(0, loser.getPoints() - 3));
-                loser.setDuelsPlayed(loser.getDuelsPlayed() + 1);
-                ur.saveAndFlush(loser); 
+            if (loserId != null) {
+                ur.findById(loserId).ifPresent(loser -> {
+                    loser.setPoints(Math.max(0, loser.getPoints() - 3));
+                    loser.setDuelsPlayed(loser.getDuelsPlayed() + 1);
+                    ur.saveAndFlush(loser);
+                });
             }
         }
         
@@ -66,6 +64,6 @@ public class MatchService {
         payload.put("winnerId", winnerId);
         payload.put("loserId", loserId);
         payload.put("reason", reason); 
-        messagingTemplate.convertAndSend("/topic/duel/" + roomId, (Object)payload);
+        messagingTemplate.convertAndSend("/topic/duel/" + roomId, (Object) payload);
     }
 }

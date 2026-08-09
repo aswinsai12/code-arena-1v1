@@ -70,9 +70,10 @@ function App() {
   };
 
   
-  const handleMatchStart = (problemId, roomId) => {
+  const handleMatchStart = (problemId, roomId, opponentId) => {
     setActiveProblemId(problemId);
     setActiveRoomId(roomId); 
+    setActiveOpponentId(opponentId); 
     setActivePage('workspace');
   };
 
@@ -116,6 +117,7 @@ function App() {
           problemId={activeProblemId} 
           roomId={activeRoomId} 
           currentUser={currentUser} 
+          opponentId={activeOpponentId}
           setActivePage={setActivePage} 
         />
       )}

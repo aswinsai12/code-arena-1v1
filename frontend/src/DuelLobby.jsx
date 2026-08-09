@@ -7,8 +7,6 @@ export default function DuelLobby({ currentUser, onMatchStart }) {
   const [isSearching, setIsSearching] = useState(false);
   const [matchFound, setMatchFound] = useState(null);
   const [stompClient, setStompClient] = useState(null);
-  
-  
   const [matchResult, setMatchResult] = useState(null); 
 
   useEffect(() => {
@@ -17,34 +15,30 @@ export default function DuelLobby({ currentUser, onMatchStart }) {
     setIsSearching(false);
     setMatchFound(null);
     setMatchResult(null);
- const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+
+    const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
     const socket = new SockJS(`${API_URL}/ws`);
     const client = new Client({
       webSocketFactory: () => socket,
       onConnect: () => {
         console.log('Connected to Arena WebSocket Server');
         setStompClient(client);
-        
-        
+
         client.subscribe(`/topic/match/${currentUser.id}`, (message) => {
           const matchData = JSON.parse(message.body);
           setIsSearching(false);
           setMatchFound(matchData);
-          
-          
-          
+
           client.subscribe(`/topic/duel/${matchData.roomId}`, (endMessage) => {
             const endData = JSON.parse(endMessage.body);
-            
+
             if (endData.type === 'MATCH_OVER') {
-              
               if (endData.winnerId === currentUser.id) {
                 setMatchResult('WON');
               } else {
                 setMatchResult('LOST');
               }
-              
-              
+
               setTimeout(() => {
                 setMatchResult(null);
                 setMatchFound(null);
@@ -58,7 +52,7 @@ export default function DuelLobby({ currentUser, onMatchStart }) {
 
     client.activate();
     return () => client.deactivate(); 
-  }, [currentUser]);
+  }, [currentUser, setIsSearching, setMatchFound, setMatchResult]);
 
   const joinQueue = () => {
     if (stompClient && stompClient.connected) {
@@ -72,9 +66,6 @@ export default function DuelLobby({ currentUser, onMatchStart }) {
 
   if (!currentUser) return <div className="text-white p-10 text-center font-semibold tracking-wider text-xl">PLEASE SIGN IN TO DUEL.</div>;
 
-  
-  
-  
   if (matchResult === 'WON') {
     return (
       <div className="flex flex-col items-center justify-center h-[75vh] text-white z-10 relative">
@@ -87,9 +78,6 @@ export default function DuelLobby({ currentUser, onMatchStart }) {
     );
   }
 
-  
-  
-  
   if (matchResult === 'LOST') {
     return (
       <div className="flex flex-col items-center justify-center h-[75vh] text-white z-10 relative">
@@ -102,9 +90,6 @@ export default function DuelLobby({ currentUser, onMatchStart }) {
     );
   }
 
-  
-  
-  
   if (matchFound) {
     return (
       <div className="flex flex-col items-center justify-center h-[75vh] text-white z-10 relative">
@@ -116,8 +101,8 @@ export default function DuelLobby({ currentUser, onMatchStart }) {
             <span className="text-red-400">{matchFound.opponent}</span>
           </div>
           <button 
-            onClick={() => onMatchStart(matchFound.problemId, matchFound.roomId)}
-            className="bg-purple-600 hover:bg-purple-500 text-white px-10 py-4 rounded-xl font-black text-xl uppercase tracking-widest transition-transform hover:scale-105 shadow-lg"
+            onClick={() => onMatchStart(matchFound.problemId, matchFound.roomId, matchFound.opponentId)}
+            className="bg-purple-600 hover:bg-purple-500 text-white px-10 py-4 rounded-xl font-black text-xl uppercase tracking-widest transition-transform hover:scale-105 shadow-lg cursor-pointer"
           >
             Enter Arena (Task #{matchFound.problemId})
           </button>
@@ -126,21 +111,18 @@ export default function DuelLobby({ currentUser, onMatchStart }) {
     );
   }
 
-  
-  
-  
   return (
     <div className="flex flex-col items-center justify-center h-[75vh] text-white z-10 relative">
       <Swords size={100} className={`mb-8 drop-shadow-xl ${isSearching ? 'text-purple-500 animate-bounce' : 'text-gray-600'}`} />
       <h2 className="text-4xl font-extrabold mb-10 tracking-tight uppercase">Ranked 1v1 Matchmaking</h2>
-      
+
       <button 
         onClick={joinQueue}
         disabled={isSearching}
         className={`px-12 py-5 rounded-full font-bold text-xl uppercase tracking-widest transition-all ${
           isSearching 
             ? 'bg-gray-900 border-2 border-purple-500/50 text-purple-400 cursor-wait shadow-[0_0_30px_rgba(168,85,247,0.3)]' 
-            : 'bg-purple-600 hover:bg-purple-500 text-white shadow-[0_0_30px_rgba(168,85,247,0.4)] hover:-translate-y-1'
+            : 'bg-purple-600 hover:bg-purple-500 text-white shadow-[0_0_30px_rgba(168,85,247,0.4)] hover:-translate-y-1 cursor-pointer'
         }`}
       >
         {isSearching ? "SEARCHING FOR OPPONENT..." : "FIND MATCH"}
