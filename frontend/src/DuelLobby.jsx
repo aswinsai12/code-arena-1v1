@@ -138,6 +138,7 @@ export default function DuelLobby({ currentUser, onMatchStart }) {
             ? 'bg-gray-900 border-2 border-purple-500/50 text-purple-400 cursor-wait shadow-[0_0_30px_rgba(168,85,247,0.3)]' 
             : 'bg-purple-600 hover:bg-purple-500 text-white shadow-[0_0_30px_rgba(168,85,247,0.4)] hover:-translate-y-1 cursor-pointer'
         }`}
+        
       >
         {isSearching ? "SEARCHING FOR OPPONENT..." : "FIND MATCH"}
       </button>
