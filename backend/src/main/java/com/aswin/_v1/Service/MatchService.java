@@ -18,36 +18,42 @@ public class MatchService {
 
     @Autowired
     private SimpMessageSendingOperations messagingTemplate;
-
     
-    private final Map<String, Long> resolvedRooms = new ConcurrentHashMap<>();
+    private final Map<String, Boolean> resolvedRooms = new ConcurrentHashMap<>();
+    
+    private final Object matchLock = new Object();
 
-    public synchronized void resolveMatch(Long winnerId, Long loserId, String roomId, String reason) {
+    public void resolveMatch(Long winnerId, Long loserId, String roomId, String reason) {
         
-        long currentTime = System.currentTimeMillis();
-        if (roomId != null && resolvedRooms.containsKey(roomId)) {
-            long lastScoredTime = resolvedRooms.get(roomId);
-            if (currentTime - lastScoredTime < 2000) { 
+        if (roomId != null) {
+            if (resolvedRooms.containsKey(roomId)) {
                 return; 
+            }
+            resolvedRooms.put(roomId, true);
+            
+            if (resolvedRooms.size() > 500) {
+                resolvedRooms.clear();
+            }
+        } 
+        
+        synchronized (matchLock) {
+            User winner = winnerId != null ? ur.findById(winnerId).orElse(null) : null;
+            User loser = loserId != null ? ur.findById(loserId).orElse(null) : null;
+            
+            if (winner != null) {
+                winner.setPoints(winner.getPoints() + 5);
+                winner.setDuelsPlayed(winner.getDuelsPlayed() + 1);
+                winner.setDuelsWon(winner.getDuelsWon() + 1);
+                ur.saveAndFlush(winner); 
+            }
+            
+            if (loser != null) {
+                loser.setPoints(Math.max(0, loser.getPoints() - 3));
+                loser.setDuelsPlayed(loser.getDuelsPlayed() + 1);
+                ur.saveAndFlush(loser); 
             }
         }
         
-        if (roomId != null) {
-            resolvedRooms.put(roomId, currentTime);
-        } 
-        User winner = winnerId != null ? ur.findById(winnerId).orElse(null) : null;
-        User loser = loserId != null ? ur.findById(loserId).orElse(null) : null;
-        if (winner != null) {
-            winner.setPoints(winner.getPoints() + 5);
-            winner.setDuelsPlayed(winner.getDuelsPlayed() + 1);
-            winner.setDuelsWon(winner.getDuelsWon() + 1);
-            ur.save(winner);
-        }
-        if (loser != null) {
-            loser.setPoints(Math.max(0, loser.getPoints() - 3));
-            loser.setDuelsPlayed(loser.getDuelsPlayed() + 1);
-            ur.save(loser); 
-        }
         Map<String, Object> payload = new HashMap<>();
         payload.put("type", "MATCH_OVER");
         payload.put("winnerId", winnerId);

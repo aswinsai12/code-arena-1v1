@@ -20,6 +20,7 @@ export default function Workspace({ problemId, roomId, opponentId, currentUser, 
   const [isDragging, setIsDragging] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false); 
   const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
+  
   useEffect(() => {
     const handleBeforeUnload = (e) => {
       e.preventDefault();
@@ -73,25 +74,19 @@ export default function Workspace({ problemId, roomId, opponentId, currentUser, 
           const data = JSON.parse(message.body);
           
           if (data.type === 'MATCH_OVER') {
-        
             if (data.loserId === currentUser.id) {
                 setMatchResult('LOST');
             } 
-            
             else if (data.winnerId === currentUser.id) {
                 setMatchResult(data.reason === 'FORFEIT' ? 'WON_FORFEIT' : 'WON');
             } 
-     
             else {
                 if (data.reason === 'FORFEIT') {
-              
                     setMatchResult('WON_FORFEIT');
                 } else {
-                  
                     setMatchResult('LOST');
                 }
             }
-      
             setTimeout(() => {
               if(setActivePage) setActivePage('home'); 
             }, 4000);
@@ -104,11 +99,8 @@ export default function Workspace({ problemId, roomId, opponentId, currentUser, 
     return () => client.deactivate();
   }, [roomId, currentUser, setActivePage]);
 
-  
   const handleForfeit = async () => {
     setShowExitModal(false);
-    
-    
     setMatchResult('LOST');
     setTimeout(() => {
       if(setActivePage) setActivePage('home'); 
@@ -121,7 +113,7 @@ export default function Workspace({ problemId, roomId, opponentId, currentUser, 
         body: JSON.stringify({
           roomId: roomId || "default-arena",
           userId: currentUser?.id,
-          opponentId: opponentId || 9999 
+          opponentId: opponentId 
         })
       });
     } catch (err) {
@@ -172,7 +164,7 @@ export default function Workspace({ problemId, roomId, opponentId, currentUser, 
           userId: currentUser.id, 
           code: code,
           roomId: roomId || "default-arena", 
-          opponentId: opponentId || 9999 
+          opponentId: opponentId 
         }) 
       });
       const data = await response.json();
@@ -184,7 +176,6 @@ export default function Workspace({ problemId, roomId, opponentId, currentUser, 
     }
   };
 
-  
   if (matchResult === 'WON') {
     return (
       <div className="flex flex-col items-center justify-center w-full h-screen bg-green-900/90 text-white z-[200] absolute inset-0 animate-in fade-in zoom-in duration-500">
