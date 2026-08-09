@@ -22,7 +22,14 @@ public class Submission {
      @ManyToOne(fetch = FetchType.LAZY)
      @JoinColumn(name="problem_id",nullable = false)
      private Problem problem;
+private Long opponentId;
+private String roomId;
 
+public Long getOpponentId() { return opponentId; }
+public void setOpponentId(Long opponentId) { this.opponentId = opponentId; }
+
+public String getRoomId() { return roomId; }
+public void setRoomId(String roomId) { this.roomId = roomId; }
      private String language;
 
      @Column(columnDefinition = "TEXT")

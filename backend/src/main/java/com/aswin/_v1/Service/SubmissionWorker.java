@@ -21,6 +21,10 @@ public class SubmissionWorker {
     @Autowired
     private CodeExecutionService codeExecutionService;
 
+    // 1. Inject MatchService so the worker can score the match
+    @Autowired
+    private MatchService matchService;
+
     @Transactional
     @RabbitListener(queues = "submission_queue")
     public void processSubmission(String SubmId) {
@@ -41,7 +45,6 @@ public class SubmissionWorker {
             s.setVerdict("RUNNING");
             sr.save(s);
 
-            
             List<TestCase> tcs = s.getProblem().getTestCases();
             if (tcs == null || tcs.isEmpty()) {
                 s.setVerdict("SYSTEM ERROR");
@@ -51,13 +54,9 @@ public class SubmissionWorker {
                 return;
             }
 
-            
             submissionDir = codeExecutionService.createSubmissionDirectory();
-
-            
             codeExecutionService.createSourceFile(submissionDir, s.getSourceCode());
 
-            
             String compileResult = codeExecutionService.compileCode(submissionDir);
             if (!"SUCCESS".equals(compileResult)) {
                 s.setVerdict("COMPILATION ERROR");
@@ -67,19 +66,14 @@ public class SubmissionWorker {
                 return;
             }
 
-            
             boolean passedAll = true;
 
             for (int i = 0; i < tcs.size(); i++) {
                 TestCase tc = tcs.get(i);
-                
-                
                 codeExecutionService.createInputFile(submissionDir, tc.getInput());
 
-                
                 String executionResult = codeExecutionService.runCompiledCode(submissionDir);
 
-                
                 if ("TIME_LIMIT_EXCEEDED".equals(executionResult)) {
                     s.setVerdict("TIME_LIMIT_EXCEEDED");
                     s.setDetails("Time Limit Exceeded on Testcase " + (i + 1));
@@ -88,7 +82,6 @@ public class SubmissionWorker {
                     break;
                 }
 
-                
                 if (executionResult.startsWith("ERROR:") || executionResult.startsWith("SYSTEM ERROR:")) {
                     s.setVerdict("RUNTIME ERROR");
                     s.setDetails(executionResult);
@@ -97,7 +90,6 @@ public class SubmissionWorker {
                     break;
                 }
 
-                
                 String expected = tc.getExpectedOutput() != null ? tc.getExpectedOutput().trim() : "";
                 String actual = executionResult.trim();
 
@@ -113,7 +105,6 @@ public class SubmissionWorker {
                 }
             }
 
-            
             if (passedAll) {
                 long endTime = System.currentTimeMillis();
                 double execTimeInSeconds = (endTime - startTime) / 1000.0;
@@ -124,13 +115,22 @@ public class SubmissionWorker {
                 sr.save(s);
 
                 System.out.println("✅ WORKER FINISHED! ID: " + SubmId + " is ACCEPTED in " + execTimeInSeconds + "s.");
+
+                // 2. TRIGGER MATCH RESOLUTION FOR BOTH USERS
+                Long winnerId = s.getUser().getId();
+                Long loserId = s.getOpponentId(); // Reads opponent ID from submission
+                String roomId = s.getRoomId();
+
+                if (roomId != null) {
+                    System.out.println("🏆 RESOLVING MATCH IN WORKER: Winner=" + winnerId + " | Loser=" + loserId + " | Room=" + roomId);
+                    matchService.resolveMatch(winnerId, loserId, roomId, "ACCEPTED");
+                }
             }
 
         } catch (Exception e) {
             System.out.println("❌ ERROR: Worker crashed processing ID: " + SubmId);
             e.printStackTrace();
         } finally {
-            
             if (submissionDir != null && submissionDir.exists()) {
                 deleteDirectory(submissionDir);
             }

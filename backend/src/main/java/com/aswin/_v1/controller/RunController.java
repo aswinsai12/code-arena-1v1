@@ -18,7 +18,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/execute")
-
 public class RunController {
 
     @Autowired
@@ -84,6 +83,9 @@ public class RunController {
         submRepo.save(submission);
 
         if ("ACCEPTED".equals(result.getVerdict()) && request.getRoomId() != null) {
+            System.out.println("🔥 SUBMIT MATCH ACCEPTED! Winner: " + request.getUserId() + " | Loser/Opponent: " + request.getOpponentId() + " | Room: " + request.getRoomId());
+            
+            // Winner = request.getUserId(), Loser = request.getOpponentId()
             matchService.resolveMatch(request.getUserId(), request.getOpponentId(), request.getRoomId(), "NORMAL");
         }
 
@@ -97,12 +99,13 @@ public class RunController {
             Object userIdObj = payload.get("userId");
             Object opponentIdObj = payload.get("opponentId");
 
-            
-            Long loserId = userIdObj != null ? Long.valueOf(userIdObj.toString()) : null;
-            Long winnerId = opponentIdObj != null ? Long.valueOf(opponentIdObj.toString()) : null;
+            Long loserId = (userIdObj != null && !"null".equals(userIdObj.toString())) ? Long.valueOf(userIdObj.toString()) : null;
+            Long winnerId = (opponentIdObj != null && !"null".equals(opponentIdObj.toString())) ? Long.valueOf(opponentIdObj.toString()) : null;
+
+            System.out.println("🔥 FORFEIT MATCH! Winner: " + winnerId + " | Loser: " + loserId + " | Room: " + roomId);
 
             if (roomId != null && loserId != null) {
-                
+                // Winner = winnerId (opponent), Loser = loserId (user who clicked forfeit)
                 matchService.resolveMatch(winnerId, loserId, roomId, "FORFEIT");
             }
 
