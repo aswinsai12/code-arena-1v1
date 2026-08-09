@@ -38,7 +38,7 @@ Welcome to the **CodeDuel** repository! This is a full-stack web application des
 
 ## 🚀 Live Demo
 
-* **Frontend Web App:** https://code-1v1-duel.me
+* **Frontend Web App:** https://code-arena-1v1-ten.vercel.app
 * **Backend API Base URL:** https://live.code-1v1-duel.me
 
 ---
