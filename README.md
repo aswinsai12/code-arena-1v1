@@ -18,7 +18,7 @@ Welcome to the **CodeDuel** repository! This is a full-stack web application des
 ## 🛠️ Tech Stack
 
 **Frontend:**
-* React.js / Vite (or Next.js)
+* React.js / Vite 
 * Tailwind CSS
 * Deployed on: **Vercel**
 
@@ -26,6 +26,7 @@ Welcome to the **CodeDuel** repository! This is a full-stack web application des
 * Java & Spring Boot
 * Hibernate / JPA
 * RESTful APIs
+* WebSockets (STOMP/SockJS)
 * Deployed on: **Microsoft Azure**
 
 **Database & DevOps:**
@@ -37,16 +38,17 @@ Welcome to the **CodeDuel** repository! This is a full-stack web application des
 
 ## 🚀 Live Demo
 
-* **Frontend Web App:** [Insert your Vercel link here]
-* **Backend API Base URL:** [Insert your Azure IP/Domain here, e.g., http://4.194.56.127:8080]
+* **Frontend Web App:** https://code-1v1-duel.me
+* **Backend API Base URL:** https://live.code-1v1-duel.me
 
 ---
 
 ## 💻 Local Setup Instructions
 
 ### 1. Clone the Repository
-git clone [https://github.com/YOUR_USERNAME/codeduel.git](https://github.com/YOUR_USERNAME/codeduel.git)
-cd codeduel
+
+git clone [https://github.com/aswinsai12/1vs1-lock.git](https://github.com/aswinsai12/1vs1-lock.git)
+cd 1vs1-lock
 
 2. Setup the Backend (Java/Spring Boot)
 Open the backend folder in your IDE.
@@ -73,9 +75,9 @@ Open your browser and go to http://localhost:5173.
 👨‍💻 Author
 Aswin Varma Alluri
 
-GitHub: aswinsai12
+GitHub: @aswinsai12
 
-LinkedIn: https://www.linkedin.com/in/aswin-varma-alluri-cper/
+LinkedIn: aswin-varma-alluri-cper
 
 🤝 Contributing
 Contributions, issues, and feature requests are welcome!
